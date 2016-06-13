@@ -1,0 +1,328 @@
+<!doctype html>
+	<html>
+		<head>
+			<meta charset="utf-8"/>
+			<title>海报画廊</title>
+			<style type="text/css">
+			*{
+				padding:0;
+				margin: 0;
+			}
+			body{
+				background-color: #fff;
+				color: #555;
+				font-family: 'Avenir Next','Lantinghei SC';
+				font-size: 14px;
+				-webkit-font-smoothing:antialiased;
+				-moz-font-smoothing:antialiased;/*兼容firefox*/
+			}
+			.wrap{
+				width:100%;
+				height: 600px;
+				position: absolute;
+				top: 50%;
+				margin-top: -300px;
+				background-color: #333;
+				overflow:hidden;
+				/*添加3d效果*/
+				-webkit-perspective:800px;
+				-moz-perspective:800px;
+			}
+			.photo{
+				width: 260px;
+				height: 320px;
+				position: absolute;
+				z-index: 1;
+				box-shadow: 0 0 1px rgba(0,0,0,.01);
+				-webkit-transition:all .5s;
+				-moz-transition:all .5s;
+			}
+			.photo .side{
+				width: 100%;
+				height: 100%;
+				background-color: #eee;
+				position: absolute;
+				top: 0;
+				right: 0;
+				padding: 20px;
+				/*内容和padding都会在边框之内去显示*/
+				box-sizing:border-box;
+			}
+			.photo .side-front{}
+			.photo .side-front .image{
+				width: 100%;
+				height: 250px;
+				line-height: 250px;
+				text-align: center;
+			}
+			.photo .side-front .image img{
+				max-width: 100%;
+				max-height: 100%;
+			}
+			.photo .side-front .caption{
+				text-align: center;
+				font-size: 16px;
+				line-height: 50px;
+			}
+			.photo .side-back{
+
+			}
+			.photo .side-back .desc{
+				color:#666;
+				font-size: 14px;
+				line-height: 1.5em;
+			}
+
+			/*当前选中海报样式*/
+			.photo_center{
+				left:50%;
+				top:50%;
+				margin:-160px 0 0 -130px;
+				z-index:999;
+			}
+			/*负责翻转*/
+			.photo-wrap{
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				/*支持子元素3d效果*/
+				-webkit-transform-style:preserve-3d;
+				-webkit-transition:all .6s ease;
+				-moz-transform-style:preserve-3d;
+				-moz-transition:all .6s ease;
+			}
+			.photo-wrap .side-front{
+				-webkit-transform:rotateY(0deg);
+				-moz-transform:rotateY(0deg);
+			}
+			.photo-wrap .side-back{
+				-webkit-transform:rotateY(180deg);
+				-moz-transform:rotateY(180deg);
+			}
+			.photo-wrap .side{
+				/*当元素不面向屏幕时隐藏*/
+				-webkit-backface-visibility:hidden;
+				-moz-backface-visibility:hidden;
+			}
+			.photo_front .photo-wrap{
+				-webkit-transform:rotateY(0deg);
+				-moz-transform:rotateY(0deg);
+			}
+			.photo_back .photo-wrap{
+				-webkit-transform:rotateY(180deg);
+				-moz-transform:rotateY(180deg);
+			}
+
+			/*控制按钮样式*/
+			.nav{
+				width: 80%;
+				height: 30px;
+				line-height: 30px;
+				position: absolute;
+				left: 10%;
+				bottom: 20px;
+				z-index: 999;
+				text-align: center;
+			}
+			.nav .i{
+				width: 30px;
+				height: 30px;
+				display: inline-block;
+				cursor: pointer;
+				background-color: #aaa;
+				text-align: center;
+				border-radius: 50%;
+				-webkit-transform:scale(.48);
+				-webkit-transition:all .5s;
+				-moz-transform:scale(.48);
+				-moz-transition:all .5s;
+			}
+			.nav .i:after{
+				content: '\e600';
+				font-family: '微软雅黑';
+				font-size: 80%;
+				display: inline-block;
+				line-height: 30px;
+				text-align: center;
+				color: #fff;
+				opacity: 0;
+			}
+			.nav .i_current{
+				-webkit-transform:scale(1);
+				-moz-transform:scale(1);
+			}
+			.nav .i_current:after{
+				opacity: 1;
+			}
+			.nav .i_back{
+				-webkit-transform:rotateY(-180deg);
+				-moz-transform:rotateY(-180deg);
+				color: #555;
+			}
+
+			/*优化样式：图片切换平滑移动*/
+			.photo{
+				left:50%;
+				top:50%;
+				margin:-160px 0 0 -130px;
+			}
+
+			.photo-wrap{
+				-webkit-transform-origin:0% 50%;
+				-moz-transform-origin:0% 50%;
+			}
+			.photo_front .photo-wrap{
+				-webkit-transform:translate(0px , 0px) rotateY(0deg);
+				-moz-transform:translate(0px , 0px) rotateY(0deg);
+			}
+			.photo_back .photo-wrap{
+				-webkit-transform:translate(260px , 0px) rotateY(180deg);
+				-webkit-transform:translate(260px , 0px) rotateY(180deg);
+			}
+
+			</style>
+		</head>
+		<body onselectstart="return false;">
+			<!--2、改写视图，为模板字符串-->
+			<div class="wrap" id="wrap">
+				<div class="photo photo_front" onclick="turn(this)" id="photo_{{index}}">
+					<!-- photo-wrap负责翻转-->
+					<div class="photo-wrap">
+						<div class="side side-front">
+							<p class="image"><img src="images/{{img}}" alt="电影海报"/></p>
+							<p class="caption">{{caption}}</p>
+						</div>
+						<div class="side side-back">
+							<p class="desc">{{desc}}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<script type="text/javascript" src="data.js"></script>
+			<script type="text/javascript">
+			//3、通用函数
+			function g(selector){
+				var method = selector.substr(0,1) == '.'?'getElementsByClassName':'getElementById';
+				return document[method](selector.substr(1));
+			}
+
+			//随机生成一个值，支持取值范围 random([max,min]);
+			function random(range){
+				var max = Math.max(range[0],range[1]);
+				var min = Math.min(range[0],range[1]);
+				var diff  = max-min;
+				var number  = Math.floor(Math.random()*diff+min);
+				return number;
+			}
+
+			//4、输出所有海报
+			var data = data;//获取data值
+			function addPhotos(){
+				var template = g('#wrap').innerHTML;
+				var html = [];
+				var nav = [];
+				for(var s in data){
+					var _html = template.replace('{{index}}',s)
+															.replace('{{img}}',data[s].img)
+															.replace('{{caption}}',data[s].caption)
+															.replace('{{desc}}',data[s].desc);
+					html.push(_html);
+					nav.push('<span id="nav_'+s+'" onclick="turn(g(\'#photo_'+s+'\'))" class="i">&nbsp;</span>');
+				}
+				html.push('<div class="nav">'+nav.join('')+'</div>');
+				g('#wrap').innerHTML = html.join('');//这里要join一个空字符串，默认用逗号隔开
+				rsort(random([0,data.length]));
+			}
+			addPhotos();
+
+			//6、计算左右分区范围{left:{x:[max,min],y:[]},right:{}}
+			function range(){
+				var range = { left:{ x:[] , y:[] } , right:{ x:[] , y:[] }};
+				var wrap = {
+					w:g('#wrap').offsetWidth,
+					h:g('#wrap').offsetHeight
+				};
+				var photo = {
+					w:g('.photo')[0].offsetWidth,
+					h:g('.photo')[0].offsetHeight
+				};
+				range.wrap = wrap;
+				range.photo = photo;
+				range.left.x = [0-photo.w,wrap.w/2-photo.w/2];
+				range.left.y = [0-photo.h,wrap.h];
+
+				range.right.x = [wrap.w/2+photo.w/2,wrap.w + photo.w];
+				range.right.y = range.left.y;
+				return  range;
+			}
+
+
+			//5、排序海报
+			function rsort(n){
+				var _photo = g('.photo');
+				var photos = [];
+				for(var s=0;s<_photo.length;s++){
+					_photo[s].className = _photo[s].className.replace(/\s*photo_center\s*/,' ');
+					_photo[s].className = _photo[s].className.replace(/\s*photo_front\s*/,' ');
+					_photo[s].className = _photo[s].className.replace(/\s*photo_back\s*/,' ');
+
+					_photo[s].className += ' photo_front ';
+					_photo[s].style.left = '';
+					_photo[s].style.top = '';
+					_photo[s].style['transform'] = _photo[s].style['-webkit-transform'] = 'rotate(0deg) scale(1)';
+					photos.push(_photo[s]);
+				}
+				var photo_center = g('#photo_'+n);
+				photo_center.className += ' photo_center ';//注意要用空格隔开，不然会和其他样式连在一起而无效果。
+			
+				photo_center = photos.splice(n,1)[0];//去掉居中的图片
+
+				//把海报分为左右两个部分
+				var photo_left = photos.splice(0,Math.ceil(photos.length/2));
+				var photo_right = photos;
+
+				var ranges = range();
+				for(s in photo_left){
+					var photo = photo_left[s];
+					var y = random([-300,300]);
+					var x = -Math.ceil(Math.sqrt(Math.pow(300,2)-Math.pow(y,2)));
+					var j = 180+Math.ceil((300-y)/600*180);
+					photo.style['transform'] = photo.style['-webkit-transform'] = 'translate('+x+'px,'+y+'px) rotate('+j+'deg) scale(.5)';
+				}
+				for(s in photo_right){
+					var photo = photo_right[s];
+					var y = random([-300,300]);
+					var x = Math.ceil(Math.sqrt(Math.pow(300,2)-Math.pow(y,2)));
+					var j = Math.ceil((300+y)/600*180);
+					photo.style['transform'] = photo.style['-webkit-transform'] = 'translate('+x+'px,'+y+'px) rotate('+j+'deg) scale(.5)';
+				} 
+
+				//控制按钮处理
+				var navs = g('.i');
+				for(var s=0;s<navs.length;s++){
+					navs[s].className = navs[s].className.replace(/\s*i_current\s*/,' ');
+					navs[s].className = navs[s].className.replace(/\s*i_back\s*/,' ');
+				}
+				g('#nav_'+n).className += ' i_current '; 
+
+			}
+
+			//1、翻面控制
+			function turn(elem){
+				var cls = elem.className;
+				var n = elem.id.split('_')[1];
+				if(!/photo_center/.test(cls)){
+					return rsort(n);
+				}
+				if(/photo_front/.test(cls)){
+					cls = cls.replace(/photo_front/,'photo_back');
+					g('#nav_'+n).className += ' i_back ';
+				}else{
+					cls = cls.replace(/photo_back/,'photo_front');
+					g('#nav_'+n).className = g('#nav_'+n).className.replace(/\s*i_back\s*/,' ');
+				}
+				elem.className = cls;
+			}
+			</script>
+		</body>
+	</html>
